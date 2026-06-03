@@ -30,7 +30,7 @@ const serverEnvSchema = z.object({
   PAGEVIEW_SALT: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
   GITHUB_TOKEN: z.string().optional(),
-  PERSONAL_AI_HUB_API_URL: z.url().optional(),
+  PERSONAL_AI_HUB_API_URL: z.string().optional(),
   PERSONAL_AI_HUB_API_TOKEN: z.string().optional(),
 });
 
