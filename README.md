@@ -198,14 +198,14 @@ Authorization callback URL: http://localhost:3000/api/auth/callback/github
 
 本项目有两类环境变量。
 
-| 文件 | 用途 | 是否提交 |
+| 文件 | 用途 |
 | --- | --- | --- |
-| `.env.example` | 客户端变量和 Drizzle 远程操作变量示例 | 提交 |
-| `.env` | 本地真实客户端变量 | 不提交 |
-| `.dev.vars.example` | Worker 运行时变量示例 | 提交 |
-| `.dev.vars` | 本地真实运行时变量 | 不提交 |
-| `wrangler.example.jsonc` | Cloudflare 绑定模板 | 提交 |
-| `wrangler.jsonc` | 本地真实 Cloudflare 绑定 | 不提交 |
+| `.env.example` | 客户端变量和 Drizzle 远程操作变量示例 
+| `.env` | 本地真实客户端变量 
+| `.dev.vars.example` | Worker 运行时变量示例 
+| `.dev.vars` | 本地真实运行时变量
+| `wrangler.example.jsonc` | Cloudflare 绑定模板 
+| `wrangler.jsonc` | 本地真实 Cloudflare 绑定 
 
 ### `.env` 变量
 
