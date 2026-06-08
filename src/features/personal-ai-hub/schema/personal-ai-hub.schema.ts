@@ -4,7 +4,13 @@ export const HubQueryInputSchema = z.object({
   question: z.string().trim().min(1, "问题不能为空"),
   answerMode: z.enum(["local", "llm_rag"]).default("local"),
   llmModel: z
-    .enum(["qwen-max", "qwen-plus", "qwen3.6-plus", "deepseek-v4-flash", "deepseek-v4-pro"])
+    .enum([
+      "qwen-max",
+      "qwen-plus",
+      "qwen3.6-plus",
+      "deepseek-v4-flash",
+      "deepseek-v4-pro",
+    ])
     .default("deepseek-v4-flash"),
   retrievalMode: z.enum(["bm25", "vector", "hybrid", "local"]).default("bm25"),
   topK: z.number().int().min(1).max(50).default(8),
@@ -37,8 +43,12 @@ export const HubSourcesResponseSchema = z.object({
 export const AgentChatInputSchema = z.object({
   sessionId: z.string().trim().min(1, "opencode session id 不能为空"),
   question: z.string().trim().min(1, "问题不能为空"),
-  model: z.enum(["deepseek-v4-flash", "deepseek-v4-pro"]).default("deepseek-v4-flash"),
-  retrievalMode: z.enum(["bm25", "vector", "hybrid", "local"]).default("hybrid"),
+  model: z
+    .enum(["deepseek-v4-flash", "deepseek-v4-pro"])
+    .default("deepseek-v4-flash"),
+  retrievalMode: z
+    .enum(["bm25", "vector", "hybrid", "local"])
+    .default("hybrid"),
   topK: z.number().int().min(1).max(50).default(8),
   bm25TopK: z.number().int().min(1).max(100).optional(),
   vectorTopK: z.number().int().min(1).max(100).optional(),
@@ -84,8 +94,12 @@ export type HubStatusResponse = z.infer<typeof HubStatusResponseSchema>;
 export type HubSourcesResponse = z.infer<typeof HubSourcesResponseSchema>;
 export type AgentChatInput = z.input<typeof AgentChatInputSchema>;
 export type AgentChatResponse = z.infer<typeof AgentChatResponseSchema>;
-export type AgentSessionCreateInput = z.input<typeof AgentSessionCreateInputSchema>;
-export type AgentSessionMessagesInput = z.input<typeof AgentSessionMessagesInputSchema>;
+export type AgentSessionCreateInput = z.input<
+  typeof AgentSessionCreateInputSchema
+>;
+export type AgentSessionMessagesInput = z.input<
+  typeof AgentSessionMessagesInputSchema
+>;
 export type AgentSessionsResponse = z.infer<typeof AgentSessionsResponseSchema>;
 export type AgentSessionResponse = z.infer<typeof AgentSessionResponseSchema>;
 export type AgentMessagesResponse = z.infer<typeof AgentMessagesResponseSchema>;

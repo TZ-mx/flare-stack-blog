@@ -59,15 +59,17 @@ describe("personal ai hub mcp tools", () => {
       }),
     );
     expect(result.isError).not.toBe(true);
-    expect("structuredContent" in result ? result.structuredContent : null).toEqual(
-      expect.objectContaining({ answer: "matched answer" }),
-    );
+    expect(
+      "structuredContent" in result ? result.structuredContent : null,
+    ).toEqual(expect.objectContaining({ answer: "matched answer" }));
   });
 
   it("forwards wiki_status and wiki_sources_list to local Hub APIs", async () => {
     const fetchMock = vi.fn(async (url: string) => {
       if (url.endsWith("/kb/status")) {
-        return new Response(JSON.stringify({ status: "ready" }), { status: 200 });
+        return new Response(JSON.stringify({ status: "ready" }), {
+          status: 200,
+        });
       }
       return new Response(JSON.stringify({ items: [{ source_id: "src_1" }] }), {
         status: 200,
@@ -86,7 +88,11 @@ describe("personal ai hub mcp tools", () => {
 
     expect(status.isError).not.toBe(true);
     expect(sources.isError).not.toBe(true);
-    expect("structuredContent" in status ? status.structuredContent : null).toEqual({ status: "ready" });
-    expect("structuredContent" in sources ? sources.structuredContent : null).toEqual({ items: [{ source_id: "src_1" }] });
+    expect(
+      "structuredContent" in status ? status.structuredContent : null,
+    ).toEqual({ status: "ready" });
+    expect(
+      "structuredContent" in sources ? sources.structuredContent : null,
+    ).toEqual({ items: [{ source_id: "src_1" }] });
   });
 });

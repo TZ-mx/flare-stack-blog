@@ -1,333 +1,585 @@
-<div align="center">
-
-中文 | [English](./docs/README.en.md)
-
 # Flare Stack Blog
 
-基于 **Cloudflare Workers** 的全栈现代化博客 CMS<br>
-深度集成 D1、R2、KV、Workflows 等 Serverless 服务
+基于 Cloudflare Workers 的全栈博客 CMS。当前版本在原 Flare Stack Blog 的基础上，增加了更完整的后台管理、主题系统、MCP Server、Personal AI Hub 接入、长文维护规则、导入导出、版本历史、评论审核、统计与缓存维护能力。
 
-[![License](https://img.shields.io/github/license/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/blob/main/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/network/members)
-[![React](https://img.shields.io/badge/React-19-blue?logo=react&style=flat-square)](https://react.dev)
-[![TanStack Start](https://img.shields.io/badge/TanStack%20Start-black?logo=tanstack&style=flat-square)](https://tanstack.com/start)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?logo=tailwind-css&style=flat-square)](https://tailwindcss.com)
+本项目适合用来搭建个人技术博客，也适合把博客变成一个可由 AI 客户端调用的内容管理中心。
 
-[演示站点](https://blog.dukda.com) · [部署指南](#部署指南) · [本地开发](#本地开发) · [开发规范](./docs/error-handling-quickstart.md)
+> 本项目借鉴了原作者的 Flare Stack Blog 项目和部署思路。完整图文部署流程可参考 [Flare Stack Blog 部署教程](https://blog.dukda.com/post/flare-stack-blog%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)。本文档会按当前仓库的新功能和配置方式补充说明。
 
-</div>
+## 项目定位
 
----
+Flare Stack Blog 是一个运行在 Cloudflare 生态上的现代博客系统。前端使用 React 19 和 TanStack Start，后端运行在 Cloudflare Workers，数据和文件分别落在 D1、R2、KV、Queues、Workflows、Durable Objects 等 Serverless 资源中。
 
-> **注意**：本项目专为 Cloudflare 生态设计，**仅支持**部署在 Cloudflare Workers。
+当前仓库重点强化了三件事：
 
-> 建了个 Telegram 群组，欢迎交流本项目相关问题 [Telegram 群](https://t.me/+vWuQYybv1kgxMDkx)
+- 博客后台：文章、媒体、标签、评论、友情链接、配置、缓存和统计都能在后台维护。
+- AI 工作流：通过 MCP Server 和 Personal AI Hub，把博客内容管理、知识库查询和 Agent Chat 暴露给 AI 客户端。
+- 长期内容维护：为 `AI 技术新闻` 和 `无线感知前沿` 两篇长期维护文章增加专门编辑规则。
 
-## 界面预览
+## 功能总览
 
-<div align="center">
-  <img src="docs/assets/home.png" alt="首页预览" width="49%">
-  <img src="docs/assets/admin.png" alt="管理后台预览" width="49%">
-</div>
+### 内容管理
 
-## 核心功能
+- 文章草稿、发布、定时发布和下架。
+- TipTap 富文本编辑器，支持代码块、表格、图片、数学公式和目录。
+- 自动快照和版本历史，支持查看历史版本和差异。
+- 标签管理、文章搜索、相关文章、RSS、Atom、JSON Feed、Sitemap 和 Robots。
+- Markdown 导入导出，支持 Frontmatter、图片重写和压缩包下载。
 
-- **文章管理** — 富文本编辑器，支持代码高亮、图片上传、草稿/发布流程
-- **版本历史** — 编辑器自动快照与文章版本回溯，方便恢复误改内容
-- **标签系统** — 灵活的文章分类
-- **评论系统** — 支持嵌套回复、邮件通知、AI 辅助审核与上下文化评论审核
-- **友情链接** — 用户申请、管理员审核、邮件通知
-- **通知系统** — 支持邮件与 Webhook 多通道通知，可按事件订阅
-- **全文搜索** — 基于 Orama 的高性能搜索
-- **媒体库** — R2 对象存储，图片管理与优化
-- **用户认证** — GitHub OAuth 登录，权限控制
-- **MCP Server** — 支持通过 OAuth 连接 AI 客户端，进行文章、评论、标签、友链、媒体与统计管理
-- **数据统计** — Umami 集成，访问分析与热门文章
-- **SEO 增强** — Canonical URL、Schema.org 结构化数据、RSS / Sitemap / Robots
-- **AI 辅助** — Cloudflare Workers AI 集成
-- **主题系统** — 可扩展的主题模板，支持完整替换所有页面和布局
-- **导入导出** — 支持Markdown导入导出，保留图片以及Frontmatter
+### 媒体与主题
+
+- R2 媒体库，支持上传、预览、选择和删除。
+- 图片通过 `/images/*` 统一服务，并配合缓存策略。
+- 默认主题和 `fuwari` 主题。
+- 主题契约将页面、布局和业务逻辑拆开，便于扩展新主题。
+- 后台设置页可维护站点标题、描述、社交链接、图标、主题背景等配置。
+
+### 用户、评论与通知
+
+- Better Auth 认证，支持邮箱密码和 GitHub OAuth。
+- 管理员由 `ADMIN_EMAIL` 自动识别。
+- 评论支持嵌套回复、审核状态和后台管理。
+- 邮件通知和 Webhook 通知。
+- 友情链接提交、审核和结果通知。
+- Turnstile 人机验证和 Durable Objects 限流。
+
+### MCP 与 AI
+
+- 内置 MCP Server，AI 客户端可通过 OAuth 授权调用博客工具。
+- MCP 工具覆盖文章、评论、标签、媒体、友情链接、搜索、统计和 Personal AI Hub。
+- MCP Prompt 支持从 brief 写文章、发布流程、评论审核和博客统计复盘。
+- Personal AI Hub 后台页支持查询本地 LLM Wiki。
+- Agent Chat 支持先检索本地知识库，再把上下文交给 Agent Runtime。
+- Workers AI 可用于评论审核等 AI 辅助场景。
+
+### 长期维护内容
+
+- `AI_TECH_NEWS_RULES.md` 定义 `AI 技术新闻` 的来源、标签、格式和更新规则。
+- `SENSING_FRONTIER_RULES.md` 定义 `无线感知前沿` 的论文来源、标签、重点方向和更新规则。
+- 这些规则用于维护长期文章，避免新闻堆砌和风格漂移。
 
 ## 技术栈
 
-### Cloudflare 生态
+| 层级 | 技术 |
+| --- | --- |
+| 前端 | React 19、TanStack Start、TanStack Router、TanStack Query、Tailwind CSS 4 |
+| 后端 | Cloudflare Workers、Hono、TanStack Server Functions |
+| 数据 | Cloudflare D1、Drizzle ORM、drizzle-zod |
+| 存储 | Cloudflare R2、KV |
+| 异步任务 | Cloudflare Workflows、Queues |
+| 边缘能力 | Durable Objects、Workers AI、Cloudflare CDN |
+| 认证 | Better Auth、GitHub OAuth、Workers OAuth Provider |
+| 编辑器 | TipTap、Shiki、KaTeX |
+| 搜索 | Orama |
+| 国际化 | Paraglide JS |
+| 测试 | Vitest、Cloudflare Workers pool |
+| 质量工具 | Biome、TypeScript |
 
-| 服务            | 用途                           |
-| :-------------- | :----------------------------- |
-| Workers         | 边缘计算与托管                 |
-| D1              | SQLite 数据库                  |
-| R2              | 对象存储（媒体文件）           |
-| KV              | 缓存层                         |
-| Durable Objects | 分布式限流                     |
-| Workflows       | 异步任务（内容审核、定时发布） |
-| Queues          | 消息队列（邮件通知）           |
-| Workers AI      | AI 能力                        |
-| Images          | 图片优化                       |
+## 工作流程
 
-### 前端
-
-- **框架**：React 19 + TanStack Router/Query
-- **样式**：TailwindCSS 4
-- **表单**：React Hook Form + Zod
-- **图表**：Recharts
-
-### 后端
-
-- **网关层**：Hono（认证路由、媒体服务、缓存控制）
-- **业务层**：TanStack Start（SSR、Server Functions）
-- **数据库**：Drizzle ORM + drizzle-zod
-- **认证**：Better Auth（GitHub OAuth）
-
-### 编辑器
-
-TipTap 富文本 + Shiki 代码高亮
-
-### 目录结构
-
-```
-src/
-├── features/
-│   ├── posts/                  # 文章管理（其他模块结构类似）
-│   │   ├── api/                # Server Functions（对外接口）
-│   │   ├── data/               # 数据访问层（Drizzle 查询）
-│   │   ├── posts.service.ts    # 业务逻辑
-│   │   ├── posts.schema.ts     # Zod Schema + 缓存 Key 工厂
-│   │   ├── components/         # 功能专属组件
-│   │   ├── queries/            # TanStack Query Hooks
-│   │   └── workflows/          # Cloudflare Workflows
-│   ├── comments/    # 评论、嵌套回复、审核
-│   ├── tags/        # 标签管理
-│   ├── media/       # 媒体上传、R2 存储
-│   ├── search/      # Orama 全文搜索
-│   ├── auth/        # 认证、权限控制
-│   ├── dashboard/   # 管理后台数据统计
-│   ├── email/       # 邮件通知（Resend）
-│   ├── cache/       # KV 缓存服务
-│   ├── config/      # 博客配置
-│   ├── friend-links/# 友情链接（申请、审核）
-│   ├── import-export/# Markdown 导入导出
-│   ├── version/     # 版本更新检查
-│   ├── theme/       # 主题系统（契约、注册表、各主题实现）
-│   └── ai/          # Workers AI 集成
-├── routes/
-│   ├── _public/     # 公开页面（首页、文章列表/详情、搜索）
-│   ├── _auth/       # 登录/注册相关页面
-│   ├── _user/       # 用户相关页面
-│   ├── admin/       # 管理后台（文章、评论、媒体、标签、设置）
-│   ├── rss[.]xml.ts     # RSS Feed
-│   ├── sitemap[.]xml.ts # Sitemap
-│   └── robots[.]txt.ts  # Robots.txt
-├── components/      # UI 组件（ui/, common/, layout/, tiptap-editor/）
-├── lib/             # 基础设施（db/, auth/, hono/, middlewares）
-└── hooks/           # 自定义 Hooks
+```mermaid
+flowchart TD
+  A["访客访问博客"] --> B["Cloudflare CDN"]
+  B --> C["Cloudflare Worker"]
+  C --> D{"请求类型"}
+  D -->|"公开页面"| E["TanStack Start SSR"]
+  D -->|"公开 API"| F["Hono API"]
+  D -->|"认证"| G["Better Auth"]
+  D -->|"图片"| H["R2 Media Service"]
+  D -->|"MCP"| I["OAuth + MCP Server"]
+  E --> J["Service 层"]
+  F --> J
+  G --> J
+  I --> K["MCP Tool Registry"]
+  K --> J
+  K --> L["Personal AI Hub Proxy"]
+  J --> M["D1 数据库"]
+  J --> N["KV 缓存"]
+  J --> O["Queues / Workflows"]
+  H --> P["R2 对象存储"]
+  L --> Q["本地或远程 Hub API"]
 ```
 
-### 主题系统
+## 目录结构
 
-Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约（Theme Contract）** 与业务逻辑解耦。你可以在不修改任何路由或数据逻辑的前提下，完整替换博客的视觉表现层。
-
-→ **[主题开发教程](./docs/theme-guide.md)** — 了解如何从零创建你的第一个自定义主题。
-
-#### 可用主题
-
-站点个性化配置（标题、描述、社交链接、favicon、默认主题背景图等）现在统一在后台“设置”页面维护。`src/blog.config.ts` 主要作为默认值与兜底配置；主题开发时，建议结合 [主题开发教程](./docs/theme-guide.md) 查看实际可用的运行时 `siteConfig`。
-
-<table>
-  <tr>
-    <th>主题</th>
-    <th>预览</th>
-  </tr>
-  <tr>
-    <td><code>default</code>（默认）</td>
-    <td><img src="docs/assets/home.png" alt="Default theme preview" /></td>
-  </tr>
-  <tr>
-    <td><code>fuwari</code></td>
-    <td><img src="docs/assets/fuwari.png" alt="Fuwari theme preview" /></td>
-  </tr>
-</table>
-
-> 欢迎提交你的自定义主题！参考 [主题开发教程](./docs/theme-guide.md) 完成开发后，可以通过 PR 将你的主题添加到这里。
-
-### 请求流程
-
+```text
+.
+├── src/
+│   ├── routes/                  # TanStack 文件路由
+│   ├── features/                # 功能模块
+│   │   ├── posts/               # 文章、版本、发布工作流
+│   │   ├── comments/            # 评论和审核
+│   │   ├── media/               # R2 媒体库
+│   │   ├── mcp/                 # MCP Server、工具和提示词
+│   │   ├── personal-ai-hub/     # Personal AI Hub 后台代理
+│   │   ├── import-export/       # Markdown 导入导出
+│   │   ├── theme/               # 主题契约和主题实现
+│   │   └── ...
+│   ├── lib/                     # DB、Auth、Hono、Env、中间件、错误处理
+│   ├── components/              # 通用 UI 与编辑器组件
+│   └── styles/                  # 全局样式和后台样式
+├── migrations/                  # D1 迁移
+├── scripts/                     # 构建、迁移、MCP 登录等脚本
+├── tests/                       # 测试辅助
+├── docs/                        # 主题、错误处理、英文文档和截图
+├── messages/                    # 国际化文案
+├── .github/workflows/           # CI 与部署工作流
+├── .env.example                 # 客户端和 Drizzle 远程操作变量示例
+├── .dev.vars.example            # Wrangler 运行时变量示例
+└── wrangler.example.jsonc       # Cloudflare 资源绑定模板
 ```
-请求 → Cloudflare CDN（边缘缓存）
-         ↓ 未命中
-      server.ts（Hono 入口）
-         ├── /api/auth/* → Better Auth
-         ├── /images/*   → R2 媒体服务
-         └── 其他        → TanStack Start
-                              ↓
-                         中间件注入（db, auth, session）
-                              ↓
-                         路由匹配 + Loader 执行
-                              ↓
-                  KV 缓存 ←→ Service 层 ←→ D1 数据库
-                              ↓
-                         SSR 渲染（带缓存头）
-```
-
-## 部署指南
-
-请参考 **[Flare Stack Blog 部署教程](https://blog.dukda.com/post/flare-stack-blog%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)**，包含 Cloudflare 资源创建、凭证获取、GitHub OAuth 配置、两种部署方式的详细图文步骤及常见问题排查。
-
-**[视频教程](https://www.bilibili.com/video/BV1R4fnBhEs4?p=2)** 已上线
-
----
-
-## 环境变量参考
-
-| 文件        | 用途                                   |
-| :---------- | :------------------------------------- |
-| `.env`      | 客户端变量（`VITE_*`），Vite 读取      |
-| `.dev.vars` | 服务端变量，Wrangler 注入 Worker `env` |
-
-### 必填
-
-| 变量名                       | 用途   | 说明                                              |
-| :--------------------------- | :----- | :------------------------------------------------ |
-| `CLOUDFLARE_API_TOKEN`       | CI/CD  | Cloudflare API Token（Worker 部署 + D1 读写权限） |
-| `CLOUDFLARE_ACCOUNT_ID`      | CI/CD  | Cloudflare Account ID                             |
-| `D1_DATABASE_ID`             | CI/CD  | D1 数据库 ID                                      |
-| `KV_NAMESPACE_ID`            | CI/CD  | KV 命名空间 ID                                    |
-| `BUCKET_NAME`                | CI/CD  | R2 存储桶名称                                     |
-| `BETTER_AUTH_SECRET`         | 运行时 | 会话加密密钥，运行 `openssl rand -hex 32` 生成    |
-| `BETTER_AUTH_URL`            | 运行时 | 应用 URL（如 `https://blog.example.com`）         |
-| `ADMIN_EMAIL`                | 运行时 | 管理员邮箱                                        |
-| `GITHUB_CLIENT_ID`           | 运行时 | GitHub OAuth Client ID                            |
-| `GITHUB_CLIENT_SECRET`       | 运行时 | GitHub OAuth Client Secret                        |
-| `CLOUDFLARE_ZONE_ID`         | 运行时 | Cloudflare Zone ID                                |
-| `CLOUDFLARE_PURGE_API_TOKEN` | 运行时 | 具有 Purge CDN 权限的 API Token                   |
-| `DOMAIN`                     | 运行时 | 博客域名（如 `blog.example.com`）                 |
-
-### 可选
-
-| 变量名                    | 用途   | 说明                                                                                                      |
-| :------------------------ | :----- | :-------------------------------------------------------------------------------------------------------- |
-| `THEME`                   | 构建时 | 主题名称，默认 `default`，详见 [可用主题](#可用主题)                                                      |
-| `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key                                                                  |
-| `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                                                                             |
-| `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）                                                                |
-| `LOCALE`                  | 运行时 | 默认语言，支持 `zh` / `en`，默认 `zh`；通知邮件、Webhook 文本和后台异步任务文案会使用该语言               |
-| `CDN_DOMAIN`              | 运行时 | 独立 CDN 域名（如 `cdn.example.com`），purge 时优先使用；须为当前 Zone 下通过 SaaS CNAME 接入的自定义域名 |
-| `ROUTE`                   | CI/CD  | 设为 `1` 时，GitHub Actions 部署自动改用 Cloudflare `routes` 模式                                        |
-| `ZONE_NAME`               | CI/CD  | 可选。仅在 `ROUTE=1` 且 Zone 不是从 `DOMAIN` 自动推导结果时填写                                           |
-| `PAGEVIEW_SALT`           | 运行时 | 浏览量统计的访客匿名化 salt，运行 `openssl rand -hex 16` 生成                                             |
-| `UMAMI_SRC`               | 运行时 | Umami 客户端埋点代理 URL（如 `https://cloud.umami.is`）                                                   |
-| `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID（客户端埋点）                                                                            |
-
----
 
 ## 本地开发
 
 ### 前置要求
 
-- [Bun](https://bun.sh) >= 1.3
-- Cloudflare 账号（用于远程 D1/R2/KV 资源）
+- Bun 1.3 或更高版本。
+- Cloudflare 账号。
+- GitHub OAuth App。
+- 已创建或准备创建 D1、R2、KV、Queues 等 Cloudflare 资源。
 
-### 快速开始
+### 安装依赖
 
 ```bash
-# 安装依赖
 bun install
+```
 
-# 配置环境变量
-cp .env.example .env        # 客户端变量
-cp .dev.vars.example .dev.vars  # 服务端变量
+### 准备本地配置
 
-# 配置 Wrangler
+```bash
+cp .env.example .env
+cp .dev.vars.example .dev.vars
 cp wrangler.example.jsonc wrangler.jsonc
-# 编辑 wrangler.jsonc，填入你的资源 ID
-# 默认示例使用 custom_domain，也可以改成 routes 模式（如 blog.example.com/*）
+```
 
-# 启动开发服务器
+然后编辑：
+
+- `.env`：客户端构建变量，以及 Drizzle 远程数据库操作变量。
+- `.dev.vars`：Worker 运行时变量。
+- `wrangler.jsonc`：D1、R2、KV、Queues、Workflows、Durable Objects 和路由绑定。
+
+真实密钥不要提交。`.env`、`.dev.vars`、`wrangler.jsonc` 已在 `.gitignore` 中排除。
+
+### 启动开发服务
+
+```bash
 bun dev
 ```
 
-### 登录管理后台
+本地访问：
 
-**方式一：邮箱密码注册（无需第三方服务）**
-
-1. 访问 `http://localhost:3000` 注册页面，使用 `.dev.vars` 中配置的 `ADMIN_EMAIL` 注册账号
-2. 开发环境下验证邮件不会真正发送，验证链接会打印到控制台，复制访问即可完成验证
-3. 验证后自动登录，系统根据 `ADMIN_EMAIL` 自动赋予管理员权限
-
-**方式二：GitHub OAuth**
-
-1. 前往 [GitHub Developer Settings](https://github.com/settings/developers) 创建一个 OAuth App
-2. Homepage URL 填 `http://localhost:3000`，Authorization callback URL 填 `http://localhost:3000/api/auth/callback/github`
-3. 将 Client ID 和 Client Secret 填入 `.dev.vars`
-
-### 常用命令
-
-| 命令            | 说明                        |
-| :-------------- | :-------------------------- |
-| `bun dev`       | 启动开发服务器（端口 3000） |
-| `bun run build` | 构建生产版本                |
-| `bun run test`  | 运行测试                    |
-| `bun lint`      | ESLint 检查                 |
-| `bun check`     | 类型检查 + Lint + 格式化    |
-
-### 数据库命令
-
-| 命令              | 说明                                |
-| :---------------- | :---------------------------------- |
-| `bun db:studio`   | 启动 Drizzle Studio（可视化数据库） |
-| `bun db:generate` | 生成迁移文件                        |
-| `bun db:migrate`  | 安全应用远程 D1 迁移，校验失败自动回滚 |
-| `bun db:migrate:local` | 安全应用本地 D1 迁移，校验失败自动恢复 |
-| `bun db:migrate:unsafe` | 直接应用远程 D1 迁移，不做校验 |
-
-`bun db:migrate` / `bun db:migrate:local` 会复用 schema 中定义的状态常量，在迁移前后校验以下关键计数是否一致：
-
-- `posts`：总文章数，以及每个文章状态的数量
-- `comments`：总评论数、根评论数、子评论数，以及每个评论状态的数量
-
-安全脚本还会额外做这些事情：
-
-- 远程模式：默认只记录 D1 Time Travel bookmark，校验失败时自动执行 restore
-- 远程模式：如需额外保留 SQL 快照，可手动运行 `bun scripts/safe-d1-migrate/main.ts --remote --with-export`
-- 本地模式：快照 `.wrangler/state`（或你传入的 `--persist-to`），校验失败时自动恢复本地持久化目录
-
-### 本地模拟 Cloudflare 资源
-
-默认配置使用远程 D1/R2/KV 资源。如需完全本地开发，可在 `wrangler.jsonc` 中移除 `remote: true`，Miniflare 会自动模拟这些服务：
-
-```jsonc
-{
-  "d1_databases": [{ "binding": "DB", ... }],  // 移除 "remote": true
-  "r2_buckets": [{ "binding": "R2", ... }],    // 移除 "remote": true
-  "kv_namespaces": [{ "binding": "KV", ... }]  // 移除 "remote": true
-}
+```text
+http://localhost:3000
 ```
 
-> **注意**：本地模拟的数据不会同步到远程，适合初期开发和测试。本地数据库迁移推荐使用：
->
-> ```bash
-> bun db:migrate:local
-> ```
+### 登录后台
 
-### 域名绑定方式
+后台路径：
 
-默认配置使用 `custom_domain`。如果你希望使用 `routes` 方式接管 `blog.example.com/*`，可改成：
-
-```jsonc
-{
-  "routes": [{ "pattern": "blog.example.com/*", "zone_name": "example.com" }]
-}
+```text
+http://localhost:3000/admin
 ```
 
-使用仓库内置 GitHub Actions 部署时，不必手改 `wrangler.example.jsonc`：
+开发环境推荐先用邮箱密码注册：
 
-- 默认：`custom_domain`
-- 设置仓库变量 `ROUTE=1`：自动切到 `routes`
-- `pattern` 自动使用 `${DOMAIN}/*`
-- `zone_name` 默认从 `DOMAIN` 推导；如有子域单独托管场景，可额外设置 `ZONE_NAME`
+1. `.dev.vars` 中设置 `ADMIN_EMAIL`。
+2. 使用该邮箱注册。
+3. 开发环境的验证邮件链接会打印在终端日志中。
+4. 访问验证链接后，该账号会获得管理员权限。
 
-## 贡献
+如果使用 GitHub OAuth，本地 OAuth App 配置如下：
 
-欢迎贡献代码、报告问题或提出建议！请查看 [CONTRIBUTING.md](./CONTRIBUTING.md) 了解开发指南和代码规范。
+```text
+Homepage URL: http://localhost:3000
+Authorization callback URL: http://localhost:3000/api/auth/callback/github
+```
 
-开始改动业务前，建议先阅读 [错误处理与 Result 模式快速上手](./docs/error-handling-quickstart.md)。
+## 环境变量
+
+本项目有两类环境变量。
+
+| 文件 | 用途 | 是否提交 |
+| --- | --- | --- |
+| `.env.example` | 客户端变量和 Drizzle 远程操作变量示例 | 提交 |
+| `.env` | 本地真实客户端变量 | 不提交 |
+| `.dev.vars.example` | Worker 运行时变量示例 | 提交 |
+| `.dev.vars` | 本地真实运行时变量 | 不提交 |
+| `wrangler.example.jsonc` | Cloudflare 绑定模板 | 提交 |
+| `wrangler.jsonc` | 本地真实 Cloudflare 绑定 | 不提交 |
+
+### `.env` 变量
+
+| 变量 | 必填 | 说明 |
+| --- | --- | --- |
+| `CLOUDFLARE_ACCOUNT_ID` | 本地远程 DB 操作需要 | Cloudflare Account ID |
+| `CLOUDFLARE_DATABASE_ID` | 本地远程 DB 操作需要 | D1 Database ID |
+| `CLOUDFLARE_D1_TOKEN` | 本地远程 DB 操作需要 | D1 操作 Token |
+| `VITE_TURNSTILE_SITE_KEY` | 可选 | Turnstile Site Key，会进入客户端包 |
+| `VITE_UMAMI_WEBSITE_ID` | 可选 | Umami Website ID，会进入客户端包 |
+
+### `.dev.vars` 变量
+
+| 变量 | 必填 | 说明 |
+| --- | --- | --- |
+| `ENVIRONMENT` | 是 | `dev`、`prod` 或 `test` |
+| `BETTER_AUTH_SECRET` | 是 | 会话密钥，建议用 `openssl rand -hex 32` 生成 |
+| `BETTER_AUTH_URL` | 是 | 本地为 `http://localhost:3000`，生产为站点 URL |
+| `ADMIN_EMAIL` | 是 | 管理员邮箱 |
+| `GITHUB_CLIENT_ID` | 是 | GitHub OAuth Client ID |
+| `GITHUB_CLIENT_SECRET` | 是 | GitHub OAuth Client Secret |
+| `CLOUDFLARE_ZONE_ID` | 是 | Cloudflare Zone ID |
+| `CLOUDFLARE_PURGE_API_TOKEN` | 是 | CDN 清缓存 Token |
+| `DOMAIN` | 是 | 生产域名，如 `blog.example.com` |
+| `CDN_DOMAIN` | 可选 | 独立 CDN 域名 |
+| `PAGEVIEW_SALT` | 推荐 | 浏览量匿名访客哈希 salt |
+| `TURNSTILE_SECRET_KEY` | 可选 | Turnstile Secret Key |
+| `GITHUB_TOKEN` | 可选 | 版本检查用，避免 GitHub API 限流 |
+| `UMAMI_SRC` | 可选 | Umami 代理源，如 `https://cloud.umami.is` |
+| `VITE_UMAMI_WEBSITE_ID` | 可选 | Worker 运行时也可读取的 Umami ID |
+| `PERSONAL_AI_HUB_API_URL` | 可选 | Personal AI Hub API 地址 |
+| `PERSONAL_AI_HUB_API_TOKEN` | 可选 | Personal AI Hub API Token |
+
+### 变量安全
+
+- 不要提交 `.env`、`.dev.vars`、`wrangler.jsonc`、`.mcp.json`、`mcp-tokens.json`。
+- `VITE_` 变量会进入前端构建产物，不要放服务端密钥。
+- `PERSONAL_AI_HUB_API_TOKEN`、`GITHUB_CLIENT_SECRET`、`BETTER_AUTH_SECRET` 只能放在 Worker Secrets 或 `.dev.vars`。
+
+## Cloudflare 资源准备
+
+你需要提前准备这些资源：
+
+| 资源 | 用途 | 绑定名 |
+| --- | --- | --- |
+| Workers | 承载全栈应用 | `main` 指向 `src/server.ts` |
+| D1 | 文章、评论、用户、配置等数据库 | `DB` |
+| R2 | 图片和媒体文件 | `R2` |
+| KV | 缓存与 OAuth 辅助存储 | `KV`、`OAUTH_KV` |
+| Queues | 邮件、Webhook、浏览量等异步任务 | `QUEUE` |
+| Workflows | 文章处理、快照、评论审核、导入导出 | 多个 workflow binding |
+| Durable Objects | 限流和密码哈希 | `RATE_LIMITER`、`PASSWORD_HASHER` |
+| Workers AI | AI 审核等能力 | `AI` |
+
+`wrangler.example.jsonc` 中已经列出所有 binding。复制为 `wrangler.jsonc` 后，填入自己的资源 ID 和域名。
+
+## 部署方式
+
+推荐优先使用 GitHub Actions 自动部署。Cloudflare Dashboard 连接仓库也可用，但缓存清理和变量管理需要手动处理。
+
+### 方式一：GitHub Actions 自动部署
+
+1. 把代码推送到 GitHub 仓库。
+2. 在仓库的 `Settings -> Secrets and variables -> Actions` 中配置变量。
+3. 启用 Actions。
+4. 推送 `main` 分支或手动运行 `deploy to cloudflare workers` 工作流。
+
+#### GitHub Actions Secrets
+
+| Secret | 说明 |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | 部署 Worker、操作 D1 和资源的 Token |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Account ID |
+| `D1_DATABASE_ID` | D1 Database ID |
+| `KV_NAMESPACE_ID` | KV Namespace ID |
+| `BUCKET_NAME` | R2 Bucket 名称 |
+| `BETTER_AUTH_SECRET` | Better Auth 会话密钥 |
+| `BETTER_AUTH_URL` | 生产站点 URL |
+| `ADMIN_EMAIL` | 管理员邮箱 |
+| `GH_CLIENT_ID` | GitHub OAuth Client ID |
+| `GH_CLIENT_SECRET` | GitHub OAuth Client Secret |
+| `CLOUDFLARE_ZONE_ID` | Cloudflare Zone ID |
+| `CLOUDFLARE_PURGE_API_TOKEN` | CDN 清缓存 Token |
+| `DOMAIN` | 博客域名 |
+| `CDN_DOMAIN` | 可选，独立 CDN 域名 |
+| `UMAMI_SRC` | 可选，Umami 代理源 |
+| `PAGEVIEW_SALT` | 推荐，浏览量匿名 salt |
+| `TURNSTILE_SECRET_KEY` | 可选，Turnstile Secret Key |
+| `GH_TOKEN` | 可选，版本检查用 GitHub Token |
+| `PERSONAL_AI_HUB_API_URL` | 可选，Personal AI Hub API 地址 |
+| `PERSONAL_AI_HUB_API_TOKEN` | 可选，Personal AI Hub API Token |
+
+#### GitHub Actions Variables
+
+| Variable | 说明 |
+| --- | --- |
+| `VITE_UMAMI_WEBSITE_ID` | 可选，Umami Website ID |
+| `VITE_TURNSTILE_SITE_KEY` | 可选，Turnstile Site Key |
+| `THEME` | 可选，主题名，如 `default` 或 `fuwari` |
+| `ROUTE` | 可选，设为 `1` 时使用 Cloudflare routes 模式 |
+| `ZONE_NAME` | 可选，`ROUTE=1` 且无法从 `DOMAIN` 推导时使用 |
+
+部署工作流会执行：
+
+```bash
+bun ci
+bun run wrangler:prepare
+bunx wrangler secret bulk secrets.json
+bun run build
+bun run deploy
+```
+
+`wrangler:prepare` 会根据 `DOMAIN`、`ROUTE`、`D1_DATABASE_ID`、`KV_NAMESPACE_ID` 和 `BUCKET_NAME` 生成真实 `wrangler.jsonc`。
+
+### 方式二：Cloudflare Dashboard 连接仓库
+
+1. 在 Cloudflare Dashboard 创建 Worker 并连接 GitHub 仓库。
+2. Framework preset 选择 `None`。
+3. Build command 填：
+
+```bash
+bun run build
+```
+
+4. Deploy command 填：
+
+```bash
+bun run deploy
+```
+
+5. 构建变量中配置 `BUN_VERSION` 和所有 `VITE_` 变量。
+6. Worker 的 Variables and Secrets 中配置运行时变量。
+7. 手动维护 `wrangler.jsonc` 或在构建流程中先生成它。
+
+使用 Dashboard 方式时，部署后不会自动执行仓库中的 CDN 清缓存步骤。需要在后台设置页或 Cloudflare Dashboard 手动清缓存。
+
+## 数据库迁移
+
+生成迁移：
+
+```bash
+bun run db:generate
+```
+
+本地迁移：
+
+```bash
+bun run db:migrate:local
+```
+
+远程安全迁移：
+
+```bash
+bun run db:migrate
+```
+
+直接使用 Wrangler 远程迁移：
+
+```bash
+bun run db:migrate:unsafe
+```
+
+默认部署脚本会在 `bun run deploy` 前执行 `bun db:migrate`。
+
+## MCP Server
+
+本项目内置 MCP Server，用于把博客能力暴露给 AI 客户端。
+
+### 服务入口
+
+生产环境 MCP 地址通常是：
+
+```text
+https://你的域名/mcp
+```
+
+OAuth 相关路径：
+
+```text
+/oauth/register
+/oauth/consent
+/oauth/token
+```
+
+### MCP 工具能力
+
+- `posts_*`：创建草稿、更新文章、读取文章、删除文章、设置可见性。
+- `tags_*`：创建、更新、删除、列出标签，给文章设置标签。
+- `comments_*`：列出评论、设置审核状态、删除评论。
+- `media_*`：列出媒体、删除媒体、查看使用情况。
+- `friend_links_*`：创建、更新、删除、列出友情链接。
+- `search_posts`：搜索文章。
+- `analytics_overview`：查看博客统计概览。
+- `wiki_query`、`wiki_sources_list`、`wiki_status`：通过 Personal AI Hub 查询本地知识库。
+
+### 本地 MCP 登录脚本
+
+脚本位置：
+
+```text
+scripts/mcp-login.ts
+scripts/mcp-login-simple.mjs
+scripts/mcp-refresh-auto.mjs
+```
+
+首次登录会启动本地回调服务并完成 OAuth 授权。脚本会把 token 保存到 `mcp-tokens.json`，并可能写入 `.mcp.json`。
+
+这两个文件包含真实凭据，已经加入 `.gitignore`，不要上传到 GitHub。
+
+## Personal AI Hub
+
+后台有两个页面：
+
+```text
+/admin/personal-ai-hub
+/admin/personal-ai-hub/agent-chat
+```
+
+`/admin/personal-ai-hub` 用来检查 Hub 状态和查询本地 LLM Wiki。`/admin/personal-ai-hub/agent-chat` 用来管理 Agent 会话，并把检索结果交给 Agent Runtime。
+
+需要配置：
+
+```text
+PERSONAL_AI_HUB_API_URL=https://hub-api.example.com
+PERSONAL_AI_HUB_API_TOKEN=your-token
+```
+
+本地开发可指向：
+
+```text
+PERSONAL_AI_HUB_API_URL=http://127.0.0.1:8000
+```
+
+生产环境建议通过 Cloudflare Tunnel 暴露本地 Hub API，并使用 Token 保护。
+
+## 长期文章维护
+
+当前仓库包含两份专门规则：
+
+```text
+AI_TECH_NEWS_RULES.md
+SENSING_FRONTIER_RULES.md
+```
+
+维护 `AI 技术新闻` 时，先读 `AI_TECH_NEWS_RULES.md`。维护 `无线感知前沿` 时，先读 `SENSING_FRONTIER_RULES.md`。
+
+这两份规则约束：
+
+- 来源优先级。
+- 可用标签。
+- 日期和月份格式。
+- 单条新闻长度。
+- 禁止表格、营销词和泛泛总结。
+- 不主动改变文章发布状态。
+
+## 常用命令
+
+| 命令 | 说明 |
+| --- | --- |
+| `bun dev` | 启动本地开发服务 |
+| `bun run build` | 生成 manifest 并构建生产包 |
+| `bun run deploy` | 执行 D1 迁移并部署 Worker |
+| `bun run test` | 运行 Cloudflare Workers pool 测试 |
+| `bun run test:node` | 运行 Node 环境测试 |
+| `bun lint` | Biome lint |
+| `bun lint:fix` | Biome 自动修复 |
+| `bun run format` | 格式化 |
+| `bun run typecheck` | TypeScript 类型检查 |
+| `bun run check` | 格式修复加类型检查 |
+| `bun run i18n:compile` | 编译 Paraglide 运行时 |
+| `bun run i18n:verify` | 检查翻译完整性 |
+| `bun run create-theme` | 创建新主题骨架 |
+| `bun run mcp:inspect` | 启动 MCP Inspector |
+
+## 代码组织约定
+
+每个功能模块尽量按以下结构组织：
+
+```text
+features/<name>/
+├── api/              # Server Functions 或 Hono routes
+├── data/             # Drizzle 查询，不放业务逻辑
+├── components/       # 功能组件
+├── queries/          # TanStack Query hooks
+├── service/          # 业务服务
+├── schema/           # Zod schema
+└── workflows/        # Cloudflare Workflows
+```
+
+服务层推荐返回 `Result<TData, { reason: string }>`。调用方用 `switch` 穷尽处理错误原因。
+
+## 排障
+
+### 页面能打开，但后台操作失败
+
+检查 Cloudflare Worker 的实时日志。多数情况是运行时变量缺失，或 D1/R2/KV binding 配置不正确。
+
+### GitHub OAuth 登录失败
+
+确认 OAuth App 的 callback URL：
+
+```text
+https://你的域名/api/auth/callback/github
+```
+
+本地开发时使用：
+
+```text
+http://localhost:3000/api/auth/callback/github
+```
+
+### 前台看不到已发布文章
+
+文章必须同时满足：
+
+- 状态为已发布。
+- 发布时间不晚于当前时间。
+- 发布工作流已执行完成。
+
+如果发布时间在未来，系统会等待定时发布工作流处理。
+
+### MCP 授权后工具不可用
+
+检查 OAuth scope 是否包含目标工具需要的权限。Personal AI Hub 需要：
+
+```text
+personal-ai-hub:read
+```
+
+如果 token 过期，重新运行登录脚本或刷新脚本。
+
+### Personal AI Hub 连接失败
+
+检查：
+
+- `PERSONAL_AI_HUB_API_URL` 是否可访问。
+- `PERSONAL_AI_HUB_API_TOKEN` 是否正确。
+- 本地 FastAPI 或 Cloudflare Tunnel 是否启动。
+- Worker 实时日志中是否有代理错误。
+
+### 样式或静态资源更新后不生效
+
+清理 Cloudflare CDN 缓存。GitHub Actions 部署会自动按 `DOMAIN` 或 `CDN_DOMAIN` 清理；Dashboard 部署需要手动清理。
+
+## 提交与安全
+
+本仓库应该提交：
+
+- 源码、迁移、测试、脚本、示例配置和文档。
+- `AI_TECH_NEWS_RULES.md`、`SENSING_FRONTIER_RULES.md` 等长期维护规则。
+
+本仓库不应该提交：
+
+- `.env`
+- `.dev.vars`
+- `wrangler.jsonc`
+- `.mcp.json`
+- `mcp-tokens.json`
+- 日志文件
+- 本地缓存和测试产物
+
+提交前建议运行：
+
+```bash
+bun run check
+bun run test:node
+```
+
+如果修改了 Workers、D1、Workflows 或 Hono 相关逻辑，再运行：
+
+```bash
+bun run test
+```
+
+## License
+
+本项目基于 GPL-3.0-only 许可证发布。详见 `LICENSE`。

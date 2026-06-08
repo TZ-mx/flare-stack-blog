@@ -21,3 +21,12 @@ docs/superpowers/
 .cache/
 *.tsbuildinfo
 .fallow
+.mcp.json
+mcp-tokens.json
+mcp-auth*.log
+mcp-auth*.err.log
+.playwright-mcp/
+blog-post-*.json
+.codex-blog-post-prompt.md
+AGENTS.md
+AI_NEWS_DIGEST_PLAN.md

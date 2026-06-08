@@ -13,7 +13,9 @@ describe("Personal AI Hub service", () => {
   it("requires explicit Hub API URL and token", () => {
     expect(() => getHubApiConfig({})).toThrow("PERSONAL_AI_HUB_API_URL");
     expect(() =>
-      getHubApiConfig({ PERSONAL_AI_HUB_API_URL: "https://hub-api.libresensing.com" }),
+      getHubApiConfig({
+        PERSONAL_AI_HUB_API_URL: "https://hub-api.libresensing.com",
+      }),
     ).toThrow("PERSONAL_AI_HUB_API_TOKEN");
   });
 
@@ -28,17 +30,18 @@ describe("Personal AI Hub service", () => {
   });
 
   it("proxies knowledge base query with X-Hub-Token", async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          answer: "ok",
-          citations: [],
-          recall_items: [],
-          timings: { total_ms: 1 },
-          execution: { cache_id: "qa_test" },
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      ),
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            answer: "ok",
+            citations: [],
+            recall_items: [],
+            timings: { total_ms: 1 },
+            execution: { cache_id: "qa_test" },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
     );
 
     const result = await queryKnowledgeBase(
@@ -71,7 +74,9 @@ describe("Personal AI Hub service", () => {
   });
 
   it("surfaces Hub offline errors without leaking token", async () => {
-    const fetchMock = vi.fn(async () => new Response("internal detail", { status: 503 }));
+    const fetchMock = vi.fn(
+      async () => new Response("internal detail", { status: 503 }),
+    );
 
     await expect(() =>
       queryKnowledgeBase(
@@ -93,17 +98,18 @@ describe("Personal AI Hub service", () => {
   });
 
   it("proxies Agent Chat messages to the local Hub agent API", async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          citations: [],
-          execution: { cache_hit: "miss" },
-          opencode_result: { id: "msg_1", status: "completed" },
-          recall_items: [],
-          timings: { total_ms: 15 },
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      ),
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            citations: [],
+            execution: { cache_hit: "miss" },
+            opencode_result: { id: "msg_1", status: "completed" },
+            recall_items: [],
+            timings: { total_ms: 15 },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
     );
 
     const result = await sendAgentChatMessage(
@@ -123,7 +129,10 @@ describe("Personal AI Hub service", () => {
       },
     );
 
-    expect(result.opencode_result).toEqual({ id: "msg_1", status: "completed" });
+    expect(result.opencode_result).toEqual({
+      id: "msg_1",
+      status: "completed",
+    });
     expect(fetchMock).toHaveBeenCalledWith(
       "https://hub-api.libresensing.com/agent/chat",
       expect.objectContaining({
@@ -134,22 +143,32 @@ describe("Personal AI Hub service", () => {
   });
 
   it("proxies Agent Chat session endpoints", async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = String(input);
-      if (url.endsWith("/agent/sessions") && init?.method === "GET") {
-        return new Response(JSON.stringify({ items: [{ id: "ses_1" }] }), { status: 200 });
-      }
-      if (url.endsWith("/agent/sessions") && init?.method === "POST") {
-        return new Response(JSON.stringify({ session: { id: "ses_2" } }), { status: 200 });
-      }
-      if (url.endsWith("/agent/status")) {
-        return new Response(JSON.stringify({ opencode: { busy: false } }), { status: 200 });
-      }
-      if (url.endsWith("/agent/sessions/ses_1/messages")) {
-        return new Response(JSON.stringify({ items: [{ id: "msg_1" }] }), { status: 200 });
-      }
-      throw new Error(`unexpected URL: ${url}`);
-    });
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith("/agent/sessions") && init?.method === "GET") {
+          return new Response(JSON.stringify({ items: [{ id: "ses_1" }] }), {
+            status: 200,
+          });
+        }
+        if (url.endsWith("/agent/sessions") && init?.method === "POST") {
+          return new Response(JSON.stringify({ session: { id: "ses_2" } }), {
+            status: 200,
+          });
+        }
+        if (url.endsWith("/agent/status")) {
+          return new Response(JSON.stringify({ opencode: { busy: false } }), {
+            status: 200,
+          });
+        }
+        if (url.endsWith("/agent/sessions/ses_1/messages")) {
+          return new Response(JSON.stringify({ items: [{ id: "msg_1" }] }), {
+            status: 200,
+          });
+        }
+        throw new Error(`unexpected URL: ${url}`);
+      },
+    );
     const context = {
       env: {
         PERSONAL_AI_HUB_API_URL: "https://hub-api.libresensing.com",
@@ -160,7 +179,11 @@ describe("Personal AI Hub service", () => {
 
     expect((await listAgentSessions(context)).items[0].id).toBe("ses_1");
     expect((await getAgentStatus(context)).opencode.busy).toBe(false);
-    expect((await listAgentMessages(context, "ses_1")).items[0].id).toBe("msg_1");
-    expect((await createAgentSession(context, "新会话")).session.id).toBe("ses_2");
+    expect((await listAgentMessages(context, "ses_1")).items[0].id).toBe(
+      "msg_1",
+    );
+    expect((await createAgentSession(context, "新会话")).session.id).toBe(
+      "ses_2",
+    );
   });
 });

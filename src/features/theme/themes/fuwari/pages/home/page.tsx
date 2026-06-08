@@ -56,45 +56,42 @@ export function HomePage({
     [pinnedPosts],
   );
 
-  const sections: Array<HomeSection> = useMemo(
-    () => {
-      const pinned = pinnedPosts ?? [];
+  const sections: Array<HomeSection> = useMemo(() => {
+    const pinned = pinnedPosts ?? [];
 
-      return [
-        {
-          title: "长期追踪",
-          description: "持续更新 AI 技术新闻与无线感知前沿。",
+    return [
+      {
+        title: "长期追踪",
+        description: "持续更新 AI 技术新闻与无线感知前沿。",
+        category: "tracking",
+        posts: buildSectionPosts({
           category: "tracking",
-          posts: buildSectionPosts({
-            category: "tracking",
-            posts: trackingPosts,
-            pinnedPosts: pinned,
-          }),
-        },
-        {
-          title: "论文阅读",
-          description: "围绕模型、方法和研究趋势整理阅读笔记。",
+          posts: trackingPosts,
+          pinnedPosts: pinned,
+        }),
+      },
+      {
+        title: "论文阅读",
+        description: "围绕模型、方法和研究趋势整理阅读笔记。",
+        category: "paper",
+        posts: buildSectionPosts({
           category: "paper",
-          posts: buildSectionPosts({
-            category: "paper",
-            posts: paperPosts,
-            pinnedPosts: pinned,
-          }),
-        },
-        {
-          title: "技术实践",
-          description: "记录工程经验、工具链实践和项目复盘。",
+          posts: paperPosts,
+          pinnedPosts: pinned,
+        }),
+      },
+      {
+        title: "技术实践",
+        description: "记录工程经验、工具链实践和项目复盘。",
+        category: "practice",
+        posts: buildSectionPosts({
           category: "practice",
-          posts: buildSectionPosts({
-            category: "practice",
-            posts: practicePosts,
-            pinnedPosts: pinned,
-          }),
-        },
-      ];
-    },
-    [paperPosts, pinnedPosts, practicePosts, trackingPosts],
-  );
+          posts: practicePosts,
+          pinnedPosts: pinned,
+        }),
+      },
+    ];
+  }, [paperPosts, pinnedPosts, practicePosts, trackingPosts]);
 
   const allSlugs = useMemo(() => {
     return [

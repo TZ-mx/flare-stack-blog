@@ -9,8 +9,8 @@ import {
   listPersonalAiHubAgentSessionsFn,
   sendPersonalAiHubAgentChatMessageFn,
 } from "@/features/personal-ai-hub/api/personal-ai-hub.admin.api";
-import type { AgentChatResponse } from "@/features/personal-ai-hub/schema/personal-ai-hub.schema";
 import type {
+  AgentChatResponse,
   AgentMessagesResponse,
   AgentSessionResponse,
   AgentSessionsResponse,
@@ -86,7 +86,8 @@ function AgentChatPage() {
     },
   });
 
-  const isDisabled = !sessionId.trim() || !question.trim() || mutation.isPending;
+  const isDisabled =
+    !sessionId.trim() || !question.trim() || mutation.isPending;
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto animate-in fade-in duration-500">
@@ -136,7 +137,9 @@ function AgentChatPage() {
             <select
               value={model}
               onChange={(event) =>
-                setModel(event.target.value as "deepseek-v4-flash" | "deepseek-v4-pro")
+                setModel(
+                  event.target.value as "deepseek-v4-flash" | "deepseek-v4-pro",
+                )
               }
               className="w-full border border-border/40 bg-background p-3 text-sm outline-none focus:border-foreground/70"
             >
@@ -174,8 +177,14 @@ function AgentChatPage() {
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InfoBox title="runtime status" value={statusQuery.data?.opencode ?? {}} />
-          <InfoBox title="session messages" value={messagesQuery.data?.items ?? []} />
+          <InfoBox
+            title="runtime status"
+            value={statusQuery.data?.opencode ?? {}}
+          />
+          <InfoBox
+            title="session messages"
+            value={messagesQuery.data?.items ?? []}
+          />
         </div>
         <label className="block space-y-2">
           <span className="text-xs font-mono uppercase tracking-widest">
@@ -204,7 +213,7 @@ function AgentChatPage() {
         </button>
         {mutation.error && (
           <div className="border border-destructive/30 text-destructive p-3 text-xs">
-          {String(mutation.error.message)}
+            {String(mutation.error.message)}
           </div>
         )}
         {createSessionMutation.error && (

@@ -9,8 +9,8 @@ import {
   lt,
   ne,
   or,
-  sql,
   type SQL,
+  sql,
 } from "drizzle-orm";
 import type { SortDirection, SortField } from "@/features/posts/data/helper";
 import {
@@ -21,8 +21,8 @@ import type { PostListItem } from "@/features/posts/schema/posts.schema";
 import type { PostCategoryId } from "@/features/posts/utils/category";
 import {
   PAPER_TAG_NAME,
-  TRACKING_TAG_NAME,
   TRACKING_POST_TITLES,
+  TRACKING_TAG_NAME,
 } from "@/features/posts/utils/category";
 import type { PostStatus, Tag } from "@/lib/db/schema";
 import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";

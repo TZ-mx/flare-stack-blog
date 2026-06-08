@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  POST_CATEGORY_OPTIONS,
   getPostCategoryLabel,
+  POST_CATEGORY_OPTIONS,
 } from "@/features/posts/utils/category";
 import type { PostsPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
@@ -43,9 +43,7 @@ export function PostsPage({
       <div className="fuwari-card-base px-5 py-5 md:px-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <p className="text-sm font-bold text-(--fuwari-primary)">
-              文章库
-            </p>
+            <p className="text-sm font-bold text-(--fuwari-primary)">文章库</p>
             <h1 className="text-2xl md:text-3xl font-bold text-black/90 dark:text-white/90">
               {getPostCategoryLabel(selectedCategory ?? "all")}
             </h1>
@@ -53,8 +51,7 @@ export function PostsPage({
 
           <div className="flex gap-2 overflow-x-auto pb-1">
             {POST_CATEGORY_OPTIONS.map((option) => {
-              const isActive =
-                option.id === (selectedCategory ?? "all");
+              const isActive = option.id === (selectedCategory ?? "all");
               return (
                 <button
                   key={option.id}

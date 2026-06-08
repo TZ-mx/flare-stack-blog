@@ -1,22 +1,22 @@
 import {
-  AgentMessagesResponseSchema,
-  AgentSessionResponseSchema,
-  AgentSessionsResponseSchema,
-  AgentStatusResponseSchema,
-  AgentChatResponseSchema,
-  HubQueryResponseSchema,
-  HubSourcesResponseSchema,
-  HubStatusResponseSchema,
-  type AgentMessagesResponse,
-  type AgentSessionResponse,
-  type AgentSessionsResponse,
-  type AgentStatusResponse,
   type AgentChatInput,
   type AgentChatResponse,
+  AgentChatResponseSchema,
+  type AgentMessagesResponse,
+  AgentMessagesResponseSchema,
+  type AgentSessionResponse,
+  AgentSessionResponseSchema,
+  type AgentSessionsResponse,
+  AgentSessionsResponseSchema,
+  type AgentStatusResponse,
+  AgentStatusResponseSchema,
   type HubQueryInput,
   type HubQueryResponse,
+  HubQueryResponseSchema,
   type HubSourcesResponse,
+  HubSourcesResponseSchema,
   type HubStatusResponse,
+  HubStatusResponseSchema,
 } from "@/features/personal-ai-hub/schema/personal-ai-hub.schema";
 
 type HubEnv = {
@@ -32,23 +32,31 @@ type HubRequestContext = {
 export function getHubApiConfig(env: HubEnv) {
   const apiUrl = env.PERSONAL_AI_HUB_API_URL?.trim().replace(/\/+$/, "");
   if (!apiUrl) {
-    throw new Error("缺少环境变量 PERSONAL_AI_HUB_API_URL，无法连接 Personal AI Hub。");
+    throw new Error(
+      "缺少环境变量 PERSONAL_AI_HUB_API_URL，无法连接 Personal AI Hub。",
+    );
   }
 
   const token = env.PERSONAL_AI_HUB_API_TOKEN?.trim();
   if (!token) {
-    throw new Error("缺少环境变量 PERSONAL_AI_HUB_API_TOKEN，无法连接本地 Personal AI Hub。");
+    throw new Error(
+      "缺少环境变量 PERSONAL_AI_HUB_API_TOKEN，无法连接本地 Personal AI Hub。",
+    );
   }
 
   return { apiUrl, token };
 }
 
-export async function getHubStatus(context: HubRequestContext): Promise<HubStatusResponse> {
+export async function getHubStatus(
+  context: HubRequestContext,
+): Promise<HubStatusResponse> {
   const response = await hubFetch(context, "/kb/status", { method: "GET" });
   return HubStatusResponseSchema.parse(response);
 }
 
-export async function listKnowledgeSources(context: HubRequestContext): Promise<HubSourcesResponse> {
+export async function listKnowledgeSources(
+  context: HubRequestContext,
+): Promise<HubSourcesResponse> {
   const response = await hubFetch(context, "/kb/sources", { method: "GET" });
   return HubSourcesResponseSchema.parse(response);
 }
@@ -95,8 +103,12 @@ export async function sendAgentChatMessage(
   return AgentChatResponseSchema.parse(response);
 }
 
-export async function listAgentSessions(context: HubRequestContext): Promise<AgentSessionsResponse> {
-  const response = await hubFetch(context, "/agent/sessions", { method: "GET" });
+export async function listAgentSessions(
+  context: HubRequestContext,
+): Promise<AgentSessionsResponse> {
+  const response = await hubFetch(context, "/agent/sessions", {
+    method: "GET",
+  });
   return AgentSessionsResponseSchema.parse(response);
 }
 
@@ -115,18 +127,28 @@ export async function listAgentMessages(
   context: HubRequestContext,
   sessionId: string,
 ): Promise<AgentMessagesResponse> {
-  const response = await hubFetch(context, `/agent/sessions/${encodeURIComponent(sessionId)}/messages`, {
-    method: "GET",
-  });
+  const response = await hubFetch(
+    context,
+    `/agent/sessions/${encodeURIComponent(sessionId)}/messages`,
+    {
+      method: "GET",
+    },
+  );
   return AgentMessagesResponseSchema.parse(response);
 }
 
-export async function getAgentStatus(context: HubRequestContext): Promise<AgentStatusResponse> {
+export async function getAgentStatus(
+  context: HubRequestContext,
+): Promise<AgentStatusResponse> {
   const response = await hubFetch(context, "/agent/status", { method: "GET" });
   return AgentStatusResponseSchema.parse(response);
 }
 
-async function hubFetch(context: HubRequestContext, path: string, init: RequestInit) {
+async function hubFetch(
+  context: HubRequestContext,
+  path: string,
+  init: RequestInit,
+) {
   const { apiUrl, token } = getHubApiConfig(context.env);
   const fetchImpl = context.fetch ?? fetch;
   const response = await fetchImpl(`${apiUrl}${path}`, {
@@ -139,7 +161,9 @@ async function hubFetch(context: HubRequestContext, path: string, init: RequestI
   });
 
   if (!response.ok) {
-    throw new Error("Personal AI Hub 服务不可用，请确认本地 FastAPI、Cloudflare Tunnel 已启动，且 PERSONAL_AI_HUB_API_TOKEN 与 LOCAL_HUB_API_TOKEN 一致。");
+    throw new Error(
+      "Personal AI Hub 服务不可用，请确认本地 FastAPI、Cloudflare Tunnel 已启动，且 PERSONAL_AI_HUB_API_TOKEN 与 LOCAL_HUB_API_TOKEN 一致。",
+    );
   }
 
   return response.json();

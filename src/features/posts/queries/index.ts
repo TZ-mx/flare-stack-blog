@@ -3,12 +3,12 @@ import type {
   GetPostsCountInput,
   GetPostsInput,
 } from "@/features/posts/schema/posts.schema";
-import type { PostCategoryId } from "@/features/posts/utils/category";
 import {
   PostItemSchema,
   PostListResponseSchema,
   PostWithTocSchema,
 } from "@/features/posts/schema/posts.schema";
+import type { PostCategoryId } from "@/features/posts/utils/category";
 import { apiClient } from "@/lib/api-client";
 import { isSSR } from "@/lib/utils";
 import {

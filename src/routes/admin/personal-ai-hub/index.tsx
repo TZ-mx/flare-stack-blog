@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Activity, Brain, Database, Loader2, Send } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -26,7 +26,8 @@ function PersonalAiHubPage() {
   const [result, setResult] = useState<HubQueryResponse | null>(null);
 
   const statusMutation = useMutation({
-    mutationFn: async () => (await getPersonalAiHubStatusFn()) as HubStatusResponse,
+    mutationFn: async () =>
+      (await getPersonalAiHubStatusFn()) as HubStatusResponse,
     onSuccess: setStatus,
   });
 

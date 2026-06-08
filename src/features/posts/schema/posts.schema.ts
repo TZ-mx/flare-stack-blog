@@ -4,8 +4,8 @@ import {
   createUpdateSchema,
 } from "drizzle-zod";
 import { z } from "zod";
-import { TagSelectSchema } from "@/features/tags/tags.schema";
 import { POST_CATEGORY_IDS } from "@/features/posts/utils/category";
+import { TagSelectSchema } from "@/features/tags/tags.schema";
 import type { Post, PostStatus, Tag } from "@/lib/db/schema";
 import { POST_STATUSES, PostsTable } from "@/lib/db/schema";
 import { NullableJsonContentSchema } from "./json-content.schema";
